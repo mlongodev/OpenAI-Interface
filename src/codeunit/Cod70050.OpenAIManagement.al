@@ -40,7 +40,7 @@ codeunit 70050 "OpenAI Management"
         JsonData: Text;
     begin
         bodyJson.Add('model', GetDefaultModel);
-        bodyJson.Add('prompt', GlobalPrompt);
+        bodyJson.Add('messages', GetMessages());
         bodyJson.Add('max_tokens', GlobalMaxToken);
         bodyJson.Add('temperature', GlobalTemperature);
         bodyJson.WriteTo(JsonData);
@@ -66,34 +66,45 @@ codeunit 70050 "OpenAI Management"
             Error(ErrorResponseText, ResponseText);
     end;
 
+    local procedure GetMessages() JsonArr: JsonArray
+    var
+        RoleList: List of [Text];
+        Role: Text;
+        JsonObj: JsonObject;
+    begin
+        RoleList := MessagesDict.Keys();
+        foreach Role in RoleList do begin
+            Clear(JsonObj);
+            JsonObj.Add('role', Role);
+            JsonObj.Add('content', MessagesDict.Get(Role));
+            JsonArr.Add(JsonObj);
+        end;
+    end;
+
     local procedure ReadResponse(var Response: Text): Text
     var
         JsonObjResponse: JsonObject;
         JsonTokResponse: JsonToken;
         JsonTokChoices: JsonToken;
         JsonObjChoices: JsonObject;
+        JsonObjMessage: JsonObject;
+        JsonTokMessage: JsonToken;
         JsonTokTextValue: JsonToken;
         JsonArr: JsonArray;
     begin
         GlobalTextResponseValue := '';
         JsonObjResponse.ReadFrom(Response);
-        if JsonObjResponse.Get('choices', JsonTokResponse) then begin
-            JsonArr := JsonTokResponse.AsArray();
-            JsonArr.Get(0, JsonTokChoices);
-            JsonObjChoices := JsonTokChoices.AsObject();
-            JsonObjChoices.Get('text', JsonTokTextValue);
-            GlobalTextResponseValue := JsonTokTextValue.AsValue().AsText();
-        end;
+        JsonObjResponse.Get('choices', JsonTokResponse);
+        JsonArr := JsonTokResponse.AsArray();
+        JsonArr.Get(0, JsonTokChoices);
+        JsonObjChoices := JsonTokChoices.AsObject();
+        JsonObjChoices.Get('message', JsonTokMessage);
+        JsonObjMessage := JsonTokMessage.AsObject();
+        JsonObjMessage.Get('content', JsonTokTextValue);
+        GlobalTextResponseValue := JsonTokTextValue.AsValue().AsText();
     end;
 
-    procedure GetTextEntityRequest(EntityName: text): Text
-    var
-        FixedText: Label 'What is %1 in Microsoft Dynamics 365 Business Central?';
-    begin
-        exit(StrSubstNo(FixedText, EntityName))
-    end;
-
-    procedure SendDefaultRequest(Request: Text; var Response: Text)
+    procedure SendDefaultRequest(pMessagesDict: Dictionary of [Text, Text]; var Response: Text)
     var
         OpenAISetup: Record "OpenAI Setup";
     begin
@@ -102,7 +113,7 @@ codeunit 70050 "OpenAI Management"
         SetAPIKey(OpenAISetup."API Key");
         SetMaxToken(OpenAISetup."Default Max Token");
         SetTemperature(OpenAISetup."Default Temperature");
-        SetPrompt(Request);
+        SetMessages(pMessagesDict);
         if GetResponse() then
             Response := GetResponseTextResponseValue()
     end;
@@ -119,7 +130,7 @@ codeunit 70050 "OpenAI Management"
 
     procedure GetUrl(): Text
     begin
-        exit('https://api.openai.com/v1/completions')
+        exit('https://api.openai.com/v1/chat/completions')
     end;
 
     procedure SetOrganizationId(OrganizationId: Text[50])
@@ -147,14 +158,14 @@ codeunit 70050 "OpenAI Management"
         GlobalTemperature := Temperature;
     end;
 
-    procedure SetPrompt(Prompt: Text)
+    procedure SetMessages(pMessagesDict: Dictionary of [Text, Text])
     begin
-        GlobalPrompt := Prompt
+        MessagesDict := pMessagesDict;
     end;
 
     procedure GetDefaultModel(): Text
     begin
-        exit('text-davinci-003')
+        exit('gpt-3.5-turbo')
     end;
 
     var
@@ -165,5 +176,6 @@ codeunit 70050 "OpenAI Management"
         GlobalTemperature: Decimal;
         GlobalPrompt: Text;
         GlobalTextResponseValue: text;
+        MessagesDict: Dictionary of [Text, Text];
 
 }
