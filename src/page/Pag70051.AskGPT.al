@@ -19,6 +19,7 @@ page 70051 "Ask GPT"
                     ShowCaption = false;
                     ApplicationArea = All;
                     MultiLine = true;
+                    Width = 100;
                 }
             }
             group(ResponseGroup)
@@ -30,6 +31,7 @@ page 70051 "Ask GPT"
                     ShowCaption = false;
                     ApplicationArea = All;
                     MultiLine = true;
+                    Width = 100;
                 }
             }
         }
@@ -48,7 +50,7 @@ page 70051 "Ask GPT"
                 PromotedCategory = Process;
                 trigger OnAction()
                 var
-                    OpenAIMgt: Codeunit "OpenAI Management V2";
+                    OpenAIMgt: Codeunit "OpenAI Management";
                 begin
                     Clear(OpenAIMgt);
                     OpenAIMgt.SendDefaultRequest(GetMessages(Request), Response);
@@ -64,7 +66,6 @@ page 70051 "Ask GPT"
                 PromotedCategory = Process;
                 trigger OnAction()
                 var
-                    OpenAIMgt: Codeunit "OpenAI Management";
                     FinalMessages: Dictionary of [Text, Text];
                     RoleList: List of [Text];
                     Role: Text;

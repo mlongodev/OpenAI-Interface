@@ -21,23 +21,6 @@ pageextension 70050 "PurchOrderOpenAIExt" extends "Purchase Order"
                     PromptValue: Codeunit "Prompt Value";
                     Response: Text;
                 begin
-                    OpenAIMgt.SendDefaultRequest(PromptValue.EntityRequest(Rec.TableCaption), Response);
-                    Message(Response);
-                end;
-            }
-
-            action("Ask GPT 3.5")
-            {
-                ApplicationArea = All;
-                Caption = 'Ask GPT 3.5';
-                Image = Help;
-
-                trigger OnAction()
-                var
-                    OpenAIMgt: Codeunit "OpenAI Management v2";
-                    PromptValue: Codeunit "Prompt Value";
-                    Response: Text;
-                begin
                     OpenAIMgt.SendDefaultRequest(PromptValue.EntityRequestV2(Rec.TableCaption), Response);
                     Message(Response);
                 end;
@@ -46,10 +29,7 @@ pageextension 70050 "PurchOrderOpenAIExt" extends "Purchase Order"
 
         addafter("Archive Document_Promoted")
         {
-            actionref("Ask GPT_Promoted"; "Ask GPT")
-            {
-            }
-            actionref("Ask GPT_Promoted2"; "Ask GPT 3.5")
+            actionref("Ask GPT_Promoted2"; "Ask GPT")
             {
             }
         }

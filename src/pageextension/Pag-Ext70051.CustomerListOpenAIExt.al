@@ -12,7 +12,6 @@ pageextension 70051 "CustomerListOpenAIExt" extends "Customer List"
 
                 trigger OnAction()
                 var
-                    OpenAIMgt: Codeunit "OpenAI Management";
                     PromptValue: Codeunit "Prompt Value";
                     Response: Text;
                     AskGPT: page "Ask GPT";
