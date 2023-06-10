@@ -96,19 +96,24 @@ page 70051 "Ask GPT"
             CurrPage.Caption(CaptionPage)
     end;
 
-    local procedure GetMessages(Request: Text) ReturnMessDict: Dictionary of [Text, Text]
+    local procedure GetMessages(Request: Text): Dictionary of [Text, Text]
     var
         RoleList: List of [Text];
         UserValue: Text;
+        ReturnMessDict: Dictionary of [Text, Text];
+        Role: Text;
     begin
         RoleList := MainMessagesDict.Keys;
+        foreach Role in RoleList do
+            ReturnMessDict.Add(Role, MainMessagesDict.Get(Role));
+
         if not RoleList.Contains('user') then
-            MainMessagesDict.Add('user', Request)
+            ReturnMessDict.Add('user', Request)
         else begin
-            UserValue := MainMessagesDict.Get('user');
-            MainMessagesDict.Set('user', UserValue + Request);
+            UserValue := ReturnMessDict.Get('user');
+            ReturnMessDict.Set('user', UserValue + Request);
         end;
-        ReturnMessDict := MainMessagesDict;
+        exit(ReturnMessDict)
     end;
 
     procedure SetCaption(ParPageCaption: Text)
